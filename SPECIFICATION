@@ -1,0 +1,10 @@
+Das Spiel soll das Prinzip von Pong/Breakout übernehmen.
+
+1. zwei Spieler - keine KI
+2. Highscore mit Namen
+3. Spielstandsanzeige
+4. Bildschirmparameter aus Datei auslesen, im Spiel veränderbar
+5. Einfallswinkel und -punkt bestimmt Flugbahn
+6. Punkte durch Steine im Feld, die zufällig entstehen
+7. variable Steinhärte (Anzahl der Schläge, die benötigt werden, damit der Stein kaputt geht.)
+8. beweglicher Startbildschirm

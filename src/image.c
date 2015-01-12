@@ -4,8 +4,8 @@
 #include "game.h"
 
 static const char *image_paths[IMAGE_NUMBER] = {
-    "data/image1.bmp",
-    "data/image2.bmp",
+    "data/ball.bmp",
+    "data/paddle.bmp",
 };
 
 

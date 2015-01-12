@@ -3,6 +3,9 @@
 
 #define IMAGE_NUMBER 2
 
+#define IMAGE_BALL 0
+#define IMAGE_PADDLE 1
+
 #include "game.h"
 
 struct game_state;

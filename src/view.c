@@ -51,6 +51,7 @@ void view_update_highscore(struct game_state *gs)
 
 void view_update_playing(struct game_state *gs)
 {
+    char str[11]; // 10 Stellen für Ziffern, 1 Nullbyte
     SDL_Rect pos;
     SDL_Surface *text;
     SDL_Color text_color = { 255, 255, 255, 255 };
@@ -70,14 +71,26 @@ void view_update_playing(struct game_state *gs)
     pos.y = gs->ball_position[1] * gs->resolution[1] - gs->images[IMAGE_BALL]->h / 2;
     SDL_BlitSurface(gs->images[IMAGE_BALL], 0, gs->screen, &pos);
     // Score links malen
-    text = TTF_RenderText_Solid(gs->fonts[FONT_PLAYING], gs->name[0], text_color);
+    sprintf(str, "%u", gs->score[0]);
+    text = TTF_RenderText_Solid(gs->fonts[FONT_PLAYING], str, text_color);
     pos.x = gs->resolution[0] / 2 - text->w - 10;
     pos.y = 10;
     SDL_BlitSurface(text, 0, gs->screen, &pos);
     SDL_FreeSurface(text);
+    text = TTF_RenderText_Solid(gs->fonts[FONT_PLAYING], gs->name[0], text_color);
+    pos.x = 30;
+    pos.y = 10;
+    SDL_BlitSurface(text, 0, gs->screen, &pos);
+    SDL_FreeSurface(text);
     // Score rechts malen
-    text = TTF_RenderText_Solid(gs->fonts[FONT_PLAYING], gs->name[1], text_color);
+    sprintf(str, "%u", gs->score[1]);
+    text = TTF_RenderText_Solid(gs->fonts[FONT_PLAYING], str, text_color);
     pos.x = gs->resolution[0] / 2 + 10;
+    pos.y = 10;
+    SDL_BlitSurface(text, 0, gs->screen, &pos);
+    SDL_FreeSurface(text);
+    text = TTF_RenderText_Solid(gs->fonts[FONT_PLAYING], gs->name[1], text_color);
+    pos.x = gs->resolution[0] - text->w - 30;
     pos.y = 10;
     SDL_BlitSurface(text, 0, gs->screen, &pos);
     SDL_FreeSurface(text);

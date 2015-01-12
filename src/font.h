@@ -1,7 +1,9 @@
 #ifndef _FONT_H_
 #define _FONT_H_
 
-#define FONT_NUMBER 2
+#define FONT_NUMBER 1
+
+#define FONT_PLAYING 0
 
 #include "game.h"
 

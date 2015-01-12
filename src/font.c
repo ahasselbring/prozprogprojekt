@@ -5,13 +5,11 @@
 #include "game.h"
 
 static const char *font_paths[FONT_NUMBER] = {
-    "data/font1.ttf",
-    "data/font2.ttf",
+    "data/font.ttf",
 };
 
 static int font_sizes[FONT_NUMBER] = {
     16,
-    12
 };
 
 

@@ -42,7 +42,13 @@ static void model_playing(struct game_state *gs)
     dt = (double)(gs->last_time.tv_sec - last_time.tv_sec) + (double)(gs->last_time.tv_usec - last_time.tv_usec) / 1000000;
     gs->ball_position[0] += gs->ball_speed[0] * dt;
     if ((gs->ball_position[0] >= 1) || (gs->ball_position[0] <= 0)) {
-        gs->ball_speed[0] = -gs->ball_speed[0];
+        if (gs->ball_position[0] >= 1) {
+            gs->score[0]++;
+        } else {
+            gs->score[1]++;
+        }
+        gs->ball_position[0] = 0.5;
+        gs->ball_position[1] = 0.5;
     }
     gs->ball_position[1] += gs->ball_speed[1] * dt;
     if ((gs->ball_position[1] >= 1) || (gs->ball_position[1] <= 0)) {

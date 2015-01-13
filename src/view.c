@@ -59,11 +59,11 @@ void view_update_playing(struct game_state *gs)
     // Hintergrund malen TODO: Bild
     SDL_FillRect(gs->screen, 0, SDL_MapRGB(gs->screen->format, 0, 0, 0));
     // Paddle links malen
-    pos.x = 10;
+    pos.x = PADDLE_DISTANCE * gs->resolution[0] - gs->images[IMAGE_PADDLE]->w / 2;
     pos.y = gs->position[0] * gs->resolution[1] - gs->images[IMAGE_PADDLE]->h / 2;
     SDL_BlitSurface(gs->images[IMAGE_PADDLE], 0, gs->screen, &pos);
     // Paddle rechts malen
-    pos.x = gs->resolution[0] - 10 - gs->images[IMAGE_PADDLE]->w;
+    pos.x = (1 - PADDLE_DISTANCE) * gs->resolution[0] - gs->images[IMAGE_PADDLE]->w / 2;
     pos.y = gs->position[1] * gs->resolution[1] - gs->images[IMAGE_PADDLE]->h / 2;
     SDL_BlitSurface(gs->images[IMAGE_PADDLE], 0, gs->screen, &pos);
     // Ball malen

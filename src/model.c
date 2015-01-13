@@ -24,12 +24,13 @@ static void model_highscore(struct game_state *gs)
 static void model_start(struct game_state *gs)
 {
     gs->position[0] = gs->position[1] = 0.5;
-    gs->speed[0] = gs->speed[1] = 0.5;
+    gs->speed[0] = gs->speed[1] = 0.8;
     gs->score[0] = gs->score[1] = 0;
     gs->name[0] = "foo";
     gs->name[1] = "bar";
     gs->ball_position[0] = gs->ball_position[1] = 0.5;
-    gs->ball_speed[0] = gs->ball_speed[1] = 0.2 * 1.414;
+    gs->ball_speed[0] = 0.5;
+    gs->ball_speed[1] = 0.7;
     gs->state = MODEL_STATE_PLAYING;
     gettimeofday(&(gs->last_time), 0);
 }
@@ -39,7 +40,8 @@ static void model_playing(struct game_state *gs)
     double dt;
     struct timeval last_time = gs->last_time;
     gettimeofday(&(gs->last_time), 0);
-    dt = (double)(gs->last_time.tv_sec - last_time.tv_sec) + (double)(gs->last_time.tv_usec - last_time.tv_usec) / 1000000;
+    dt = (double)(gs->last_time.tv_sec - last_time.tv_sec) \
+        + (double)(gs->last_time.tv_usec - last_time.tv_usec) / 1000000;
     gs->ball_position[0] += gs->ball_speed[0] * dt;
     if ((gs->ball_position[0] >= 1) || (gs->ball_position[0] <= 0)) {
         if (gs->ball_position[0] >= 1) {
@@ -53,6 +55,20 @@ static void model_playing(struct game_state *gs)
     gs->ball_position[1] += gs->ball_speed[1] * dt;
     if ((gs->ball_position[1] >= 1) || (gs->ball_position[1] <= 0)) {
         gs->ball_speed[1] = -gs->ball_speed[1];
+        gs->ball_position[1] += gs->ball_speed[1] * dt;
+    }
+    if ((gs->ball_position[0] <= PADDLE_DISTANCE) \
+        && ((gs->position[0] - 0.2) < gs->ball_position[1]) \
+        && ((gs->position[0] + 0.2) > gs->ball_position[1]))
+    {
+        gs->ball_speed[0] = -gs->ball_speed[0];
+        gs->ball_position[0] += gs->ball_speed[0] * dt;
+    } else if ((gs->ball_position[0] >= (1 - PADDLE_DISTANCE)) \
+        && ((gs->position[1] - 0.2) < gs->ball_position[1]) \
+        && ((gs->position[1] + 0.2) > gs->ball_position[1]))
+    {
+        gs->ball_speed[0] = -gs->ball_speed[0];
+        gs->ball_position[0] += gs->ball_speed[0] * dt;
     }
     if (gs->controls & CONTROL_W) {
         gs->position[0] -= gs->speed[0] * dt;
@@ -64,7 +80,6 @@ static void model_playing(struct game_state *gs)
     } else if (gs->controls & CONTROL_DOWN) {
         gs->position[1] += gs->speed[1] * dt;
     }
-    // TODO: Kollisionsprüfung Paddle - Ball
 }
 
 void model_cycle(struct game_state *gs)

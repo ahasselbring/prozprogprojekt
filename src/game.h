@@ -22,6 +22,8 @@
 #define CONTROL_W 0x10
 #define CONTROL_S 0x20
 
+#define PADDLE_DISTANCE 0.002
+
 enum model_state;
 
 struct game_state {

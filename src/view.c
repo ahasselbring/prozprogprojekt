@@ -36,7 +36,36 @@ int view_init(struct game_state *gs)
 
 void view_update_mainmenu(struct game_state *gs)
 {
-    (void)gs;
+    SDL_Rect pos;
+    SDL_Surface *text;
+    SDL_Color text_color = { 255, 255, 255, 255 };
+    SDL_Color text_color_highlighted = { 255, 0, 30, 255 };
+    memset(&pos, 0, sizeof(pos));
+    // Hintergrundszene malen - Dabei werden automatisch die Buffer getauscht
+    view_update_playing(gs);
+    // ersten Menupunkt malen
+    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "Spielen", \
+        ((gs->menu_state == MENU_STATE_PLAY) ? text_color_highlighted : text_color));
+    pos.x = (gs->resolution[0] - text->w) / 2;
+    pos.y = gs->resolution[1] / 4 - text->h;
+    SDL_BlitSurface(text, 0, gs->screen, &pos);
+    SDL_FreeSurface(text);
+    // zweiten Menupunkt malen
+    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "Highscore", \
+        ((gs->menu_state == MENU_STATE_HIGHSCORE) ? text_color_highlighted : text_color));
+    pos.x = (gs->resolution[0] - text->w) / 2;
+    pos.y = gs->resolution[1] / 2 - text->h;
+    SDL_BlitSurface(text, 0, gs->screen, &pos);
+    SDL_FreeSurface(text);
+    // ersten Menupunkt malen
+    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "Optionen", \
+        ((gs->menu_state == MENU_STATE_OPTIONS) ? text_color_highlighted : text_color));
+    pos.x = (gs->resolution[0] - text->w) / 2;
+    pos.y = gs->resolution[1] * 3 / 4 - text->h;
+    SDL_BlitSurface(text, 0, gs->screen, &pos);
+    SDL_FreeSurface(text);
+    // Buffer vertauschen
+    SDL_UpdateWindowSurface(gs->window);
 }
 
 void view_update_optionmenu(struct game_state *gs)
@@ -94,8 +123,8 @@ void view_update_playing(struct game_state *gs)
     pos.y = 10;
     SDL_BlitSurface(text, 0, gs->screen, &pos);
     SDL_FreeSurface(text);
-    // Buffer vertauschen
-    SDL_UpdateWindowSurface(gs->window);
+    // Buffer vertauschen FIXME: Hässlich, weil es auf gs->state zugreift, aber ansonsten flackert das Bild.
+    (gs->state == MODEL_STATE_PLAYING) ? SDL_UpdateWindowSurface(gs->window) : 0;
 }
 
 void view_destroy(struct game_state *gs)

@@ -27,6 +27,9 @@ void controller_cycle(struct game_state *gs)
                 case SDLK_s:
                     gs->controls |= CONTROL_S;
                     break;
+                case SDLK_RETURN:
+                    gs->controls |= CONTROL_ENTER;
+                    break;
             }
         } else if (ev.type == SDL_KEYUP) {
             switch (ev.key.keysym.sym) {
@@ -48,6 +51,9 @@ void controller_cycle(struct game_state *gs)
                 case SDLK_s:
                     gs->controls &= ~CONTROL_S;
                     break;
+                case SDLK_RETURN:
+                    gs->controls &= ~CONTROL_ENTER;
+                    break;
                 case SDLK_ESCAPE:
                     gs->quit = 1;
                     break;
@@ -55,5 +61,5 @@ void controller_cycle(struct game_state *gs)
         }
     }
     model_cycle(gs);
-    SDL_Delay(2);
+    SDL_Delay(CYCLE_DELAY);
 }

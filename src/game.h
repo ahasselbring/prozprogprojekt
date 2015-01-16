@@ -21,10 +21,14 @@
 #define CONTROL_RIGHT 0x08
 #define CONTROL_W 0x10
 #define CONTROL_S 0x20
+#define CONTROL_ENTER 0x40
 
 #define PADDLE_DISTANCE 0.002
 
+#define CYCLE_DELAY 2
+
 enum model_state;
+enum menu_state;
 
 struct game_state {
     SDL_Window *window; // nur vom View genutzt
@@ -41,6 +45,7 @@ struct game_state {
     struct timeval last_time; // nur vom Model genutzt
     unsigned char quit; // lesen: Model, schreiben: Controller
     unsigned char controls; // lesen: Model, schreiben: Controller
+    enum menu_state menu_state; // lesen: View und Model, schreiben: Model
     unsigned int resolution[2]; // lesen: View und Config, schreiben: Config und Menu
     unsigned char fullscreen; // lesen: View und Config, schreiben: Config und Menu
 };

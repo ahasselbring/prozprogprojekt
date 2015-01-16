@@ -4,6 +4,7 @@
 #define FONT_NUMBER 1
 
 #define FONT_PLAYING 0
+#define FONT_MENU 0
 
 #include "game.h"
 

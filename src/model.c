@@ -152,14 +152,14 @@ static void model_highscore(struct game_state *gs)
 static void model_start(struct game_state *gs)
 {
     gs->position[0] = gs->position[1] = 0.5;
-    gs->speed[0] = gs->speed[1] = 0.8;
+    gs->speed[0] = gs->speed[1] = 0.9;
     gs->score[0] = gs->score[1] = 0;
     // TODO: Namen einlesen
     gs->name[0] = "foo";
     gs->name[1] = "bar";
     gs->ball_position[0] = gs->ball_position[1] = 0.5;
-    gs->ball_speed[0] = 0.5;
-    gs->ball_speed[1] = 0.7;
+    gs->ball_speed[0] = 0.7;
+    gs->ball_speed[1] = 0.9;
     gs->state = MODEL_STATE_PLAYING;
     gettimeofday(&(gs->last_time), 0);
 }
@@ -201,13 +201,25 @@ static void model_playing(struct game_state *gs)
     }
     if (gs->controls & CONTROL_W) {
         gs->position[0] -= gs->speed[0] * dt;
+        if (gs->position[0] < 0) {
+            gs->position[0] = 0;
+        }
     } else if (gs->controls & CONTROL_S) {
         gs->position[0] += gs->speed[0] * dt;
+        if (gs->position[0] > 1) {
+            gs->position[0] = 1;
+        }
     }
     if (gs->controls & CONTROL_UP) {
         gs->position[1] -= gs->speed[1] * dt;
+        if (gs->position[1] < 0) {
+            gs->position[1] = 0;
+        }
     } else if (gs->controls & CONTROL_DOWN) {
         gs->position[1] += gs->speed[1] * dt;
+        if (gs->position[1] > 1) {
+            gs->position[1] = 1;
+        }
     }
 }
 

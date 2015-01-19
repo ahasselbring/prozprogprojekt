@@ -143,6 +143,7 @@ void view_update_highscore(struct game_state *gs)
 
 void view_update_playing(struct game_state *gs)
 {
+    struct brick *b;
     char str[11]; // 10 Stellen für Ziffern, 1 Nullbyte
     SDL_Rect pos;
     SDL_Surface *text;
@@ -157,6 +158,12 @@ void view_update_playing(struct game_state *gs)
     pos.x = (1 - PADDLE_DISTANCE) * gs->resolution[0] - gs->images[IMAGE_PADDLE]->w / 2;
     pos.y = gs->position[1] * gs->resolution[1] - gs->images[IMAGE_PADDLE]->h / 2;
     SDL_BlitSurface(gs->images[IMAGE_PADDLE], 0, gs->screen, &pos);
+    // Bricks malen
+    for (b = gs->brick_list; b; b = b->next) {
+        pos.x = b->position[0] * gs->resolution[0] - gs->images[b->type + b->health - 1]->w / 2;
+        pos.y = b->position[1] * gs->resolution[1] - gs->images[b->type + b->health - 1]->h / 2;
+        SDL_BlitSurface(gs->images[b->type + b->health - 1], 0, gs->screen, &pos);
+    }
     // Ball malen
     pos.x = gs->ball_position[0] * gs->resolution[0] - gs->images[IMAGE_BALL]->w / 2;
     pos.y = gs->ball_position[1] * gs->resolution[1] - gs->images[IMAGE_BALL]->h / 2;

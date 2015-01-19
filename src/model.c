@@ -1,4 +1,5 @@
 #include <sys/time.h>
+#include <stdlib.h>
 
 #include "game.h"
 
@@ -151,6 +152,12 @@ static void model_highscore(struct game_state *gs)
 
 static void model_start(struct game_state *gs)
 {
+    struct brick *next;
+    while (gs->brick_list) {
+        next = gs->brick_list->next;
+        free(gs->brick_list);
+        gs->brick_list = next;
+    }
     gs->position[0] = gs->position[1] = 0.5;
     gs->speed[0] = gs->speed[1] = 0.9;
     gs->score[0] = gs->score[1] = 0;
@@ -160,17 +167,81 @@ static void model_start(struct game_state *gs)
     gs->ball_position[0] = gs->ball_position[1] = 0.5;
     gs->ball_speed[0] = 0.7;
     gs->ball_speed[1] = 0.9;
+    gs->brick_list = 0;
+    gs->brick_player = 0;
+    gs->brick_active = 0;
     gs->state = MODEL_STATE_PLAYING;
     gettimeofday(&(gs->last_time), 0);
+    gs->last_brick = gs->last_time;
+    srand(gs->last_time.tv_sec);
+}
+
+static void model_end(struct game_state *gs)
+{
+    if (gs->controls & CONTROL_ENTER) {
+        gs->controls &= ~CONTROL_ENTER;
+        gs->state = MODEL_STATE_INTRO;
+    }
 }
 
 static void model_playing(struct game_state *gs)
 {
+    void brick_add(struct game_state *gs)
+    {
+        struct brick *b;
+        if (gs->last_time.tv_sec < (gs->last_brick.tv_sec + 5)) {
+            return;
+        }
+        b = malloc(sizeof(struct brick));
+        if (!b) {
+            // Wenn kein Speicher mehr da ist, gibt es auch keinen weiteren Brick
+            return;
+        }
+        b->position[0] = 4 * PADDLE_DISTANCE + (1 - 4 * PADDLE_DISTANCE) * (double)(rand() % 1024) / 1023;
+        b->position[1] = (double)(rand() % 1024) / 1023;
+        b->health = (rand() % 4) + 1;
+        b->score = b->health * 10;
+        b->type = IMAGE_BRICK;
+        b->next = gs->brick_list;
+        gs->brick_list = b;
+        gs->last_brick = gs->last_time;
+        gs->brick_active++;
+    }
+    void brick_collision(struct game_state *gs)
+    {
+        struct brick *b, *prev, *next;
+        for (b = gs->brick_list, prev = 0; b; b = next) {
+            next = b->next;
+            if (((gs->ball_position[0] + BRICK_RADIUS) > b->position[0]) \
+                && ((gs->ball_position[0] - BRICK_RADIUS) < b->position[0]) \
+                && ((gs->ball_position[1] + BRICK_RADIUS) > b->position[1]) \
+                && ((gs->ball_position[1] - BRICK_RADIUS) < b->position[1]))
+            {
+                gs->ball_speed[0] = -gs->ball_speed[0];
+                gs->ball_speed[1] = -gs->ball_speed[1];
+                if (!(--(b->health))) {
+                    gs->score[gs->brick_player] += b->score;
+                    if (prev) {
+                        prev->next = next;
+                    } else {
+                        gs->brick_list = next;
+                    }
+                    free(b);
+                    gs->brick_active--;
+                }
+            } else {
+                prev = b;
+            }
+        }
+    }
     double dt;
     struct timeval last_time = gs->last_time;
     gettimeofday(&(gs->last_time), 0);
     dt = (double)(gs->last_time.tv_sec - last_time.tv_sec) \
         + (double)(gs->last_time.tv_usec - last_time.tv_usec) / 1000000;
+    if (gs->brick_active > BRICK_BORDER) {
+        gs->state = MODEL_STATE_END;
+    }
     gs->ball_position[0] += gs->ball_speed[0] * dt;
     if ((gs->ball_position[0] <= PADDLE_DISTANCE) \
         && ((gs->position[0] - 0.2) < gs->ball_position[1]) \
@@ -178,21 +249,28 @@ static void model_playing(struct game_state *gs)
     {
         gs->ball_speed[0] = -gs->ball_speed[0];
         gs->ball_position[0] += gs->ball_speed[0] * dt;
+        gs->brick_player = 0;
     } else if ((gs->ball_position[0] >= (1 - PADDLE_DISTANCE)) \
         && ((gs->position[1] - 0.2) < gs->ball_position[1]) \
         && ((gs->position[1] + 0.2) > gs->ball_position[1]))
     {
         gs->ball_speed[0] = -gs->ball_speed[0];
         gs->ball_position[0] += gs->ball_speed[0] * dt;
+        gs->brick_player = 1;
     }
     if ((gs->ball_position[0] >= 1) || (gs->ball_position[0] <= 0)) {
         if (gs->ball_position[0] >= 1) {
-            gs->score[0]++;
+            gs->score[0] += 50;
         } else {
-            gs->score[1]++;
+            gs->score[1] += 50;
         }
         gs->ball_position[0] = 0.5;
         gs->ball_position[1] = 0.5;
+        gs->ball_speed[0] = 0.7 * (.5 + (double)(rand() % 1024) / 1023);
+        if (rand() & 1) {
+            gs->ball_speed[0] = -gs->ball_speed[0];
+        }
+        gs->ball_speed[1] = 0.9;
     }
     gs->ball_position[1] += gs->ball_speed[1] * dt;
     if ((gs->ball_position[1] >= 1) || (gs->ball_position[1] <= 0)) {
@@ -221,6 +299,8 @@ static void model_playing(struct game_state *gs)
             gs->position[1] = 1;
         }
     }
+    brick_collision(gs);
+    brick_add(gs);
 }
 
 void model_cycle(struct game_state *gs)
@@ -249,6 +329,8 @@ void model_cycle(struct game_state *gs)
             view_update_playing(gs);
             break;
         case MODEL_STATE_END:
+            model_end(gs);
+            view_update_playing(gs);
             break;
     }
 }
@@ -261,5 +343,10 @@ int model_init(struct game_state *gs)
 
 void model_destroy(struct game_state *gs)
 {
-    (void)gs;
+    struct brick *next;
+    while (gs->brick_list) {
+        next = gs->brick_list->next;
+        free(gs->brick_list);
+        gs->brick_list = next;
+    }
 }

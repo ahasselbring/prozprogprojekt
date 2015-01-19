@@ -6,6 +6,10 @@
 static const char *image_paths[IMAGE_NUMBER] = {
     "data/ball.bmp",
     "data/paddle.bmp",
+    "data/brick1.bmp",
+    "data/brick2.bmp",
+    "data/brick3.bmp",
+    "data/brick4.bmp"
 };
 
 

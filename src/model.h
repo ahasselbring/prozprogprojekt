@@ -1,7 +1,7 @@
 #ifndef _MODEL_H_
 #define _MODEL_H_
 
-#define MENU_DELAY 15
+#define MENU_DELAY 20
 
 #include "game.h"
 
@@ -20,7 +20,12 @@ enum model_state {
 enum menu_state {
     MENU_STATE_PLAY = 0,
     MENU_STATE_HIGHSCORE = 1,
-    MENU_STATE_OPTIONS = 2
+    MENU_STATE_OPTIONS = 2,
+    MENU_STATE_VGA = 0,
+    MENU_STATE_SVGA = 1,
+    MENU_STATE_XGA = 2,
+    MENU_STATE_SXGA = 3,
+    MENU_STATE_FULL = 4
 };
 
 int model_init(struct game_state *gs);

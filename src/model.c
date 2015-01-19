@@ -58,7 +58,10 @@ static void model_mainmenu(struct game_state *gs)
             case MENU_STATE_OPTIONS:
                 gs->state = MODEL_STATE_OPTIONMENU;
                 break;
+            default:
+                break;
         }
+        gs->menu_state = 0;
     }
     gettimeofday(&(gs->last_time), 0);
     dt = (double)(gs->last_time.tv_sec - last_time.tv_sec) \
@@ -81,7 +84,64 @@ static void model_mainmenu(struct game_state *gs)
 
 static void model_optionmenu(struct game_state *gs)
 {
-    (void)gs;
+    // Das Delay ist dazu da, dass bei gedrückter Taste nicht jeden Cycle die Aktion wiederholt wird.
+    static unsigned int delay = 0;
+    if (delay) {
+        delay--;
+    }
+    if (gs->controls & CONTROL_UP) {
+        if (!delay) {
+            // voriger Menupunkt
+            if (gs->menu_state) {
+                gs->menu_state--;
+            } else {
+                gs->menu_state = 4;
+            }
+            delay = MENU_DELAY;
+        }
+    } else if (gs->controls & CONTROL_DOWN) {
+        if (!delay) {
+            // nächster Menupunkt
+            gs->menu_state++;
+            gs->menu_state %= 5;
+            delay = MENU_DELAY;
+        }
+    } else if (gs->controls & CONTROL_ENTER) {
+        // aktuellen Menupunkt auswählen
+        // Enter löschen, da gedrückt gehaltenes Enter keine Auswirkungen haben soll.
+        gs->controls &= ~CONTROL_ENTER;
+        switch (gs->menu_state) {
+            case MENU_STATE_VGA:
+                gs->resolution[0] = 640;
+                gs->resolution[1] = 480;
+                gs->fullscreen = 0;
+                break;
+            case MENU_STATE_SVGA:
+                gs->resolution[0] = 800;
+                gs->resolution[1] = 600;
+                gs->fullscreen = 0;
+                break;
+            case MENU_STATE_XGA:
+                gs->resolution[0] = 1024;
+                gs->resolution[1] = 768;
+                gs->fullscreen = 0;
+                break;
+            case MENU_STATE_SXGA:
+                gs->resolution[0] = 1280;
+                gs->resolution[1] = 1024;
+                gs->fullscreen = 0;
+                break;
+            case MENU_STATE_FULL:
+                gs->resolution[0] = gs->resolution[1] = 0;
+                gs->fullscreen = 1;
+                break;
+            default:
+                break;
+        }
+        view_reinit(gs);
+        gs->state = MODEL_STATE_MAINMENU;
+        gs->menu_state = MENU_STATE_PLAY;
+    }
 }
 
 static void model_highscore(struct game_state *gs)

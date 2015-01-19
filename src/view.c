@@ -2,6 +2,9 @@
 
 #include "game.h"
 
+static SDL_Color text_color = { 255, 255, 255, 255 };
+static SDL_Color text_color_highlighted = { 255, 0, 30, 255 };
+
 int view_init(struct game_state *gs)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -34,14 +37,33 @@ int view_init(struct game_state *gs)
     return 0;
 }
 
+int view_reinit(struct game_state *gs)
+{
+    SDL_DestroyWindow(gs->window);
+    gs->window = SDL_CreateWindow("PongING", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, \
+        gs->resolution[0], gs->resolution[1], (gs->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0));
+    if (!(gs->window)) {
+        font_destroy(gs);
+        image_destroy(gs);
+        SDL_Quit();
+        return -1;
+    }
+    gs->screen = SDL_GetWindowSurface(gs->window);
+    if (gs->fullscreen) {
+        gs->resolution[0] = gs->screen->w;
+        gs->resolution[1] = gs->screen->h;
+    }
+    printf("Reset display settings.\n");
+    return 0;
+}
+    
+
 void view_update_mainmenu(struct game_state *gs)
 {
     SDL_Rect pos;
     SDL_Surface *text;
-    SDL_Color text_color = { 255, 255, 255, 255 };
-    SDL_Color text_color_highlighted = { 255, 0, 30, 255 };
     memset(&pos, 0, sizeof(pos));
-    // Hintergrundszene malen - Dabei werden automatisch die Buffer getauscht
+    // Hintergrundszene malen
     view_update_playing(gs);
     // ersten Menupunkt malen
     text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "Spielen", \
@@ -57,7 +79,7 @@ void view_update_mainmenu(struct game_state *gs)
     pos.y = gs->resolution[1] / 2 - text->h;
     SDL_BlitSurface(text, 0, gs->screen, &pos);
     SDL_FreeSurface(text);
-    // ersten Menupunkt malen
+    // dritten Menupunkt malen
     text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "Optionen", \
         ((gs->menu_state == MENU_STATE_OPTIONS) ? text_color_highlighted : text_color));
     pos.x = (gs->resolution[0] - text->w) / 2;
@@ -70,7 +92,48 @@ void view_update_mainmenu(struct game_state *gs)
 
 void view_update_optionmenu(struct game_state *gs)
 {
-    (void)gs;
+    SDL_Rect pos;
+    SDL_Surface *text;
+    memset(&pos, 0, sizeof(pos));
+    // Hintergrund malen TODO: Bild
+    SDL_FillRect(gs->screen, 0, SDL_MapRGB(gs->screen->format, 0, 0, 0));
+    // ersten Menupunkt malen
+    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "640x480", \
+        ((gs->menu_state == MENU_STATE_VGA) ? text_color_highlighted : text_color));
+    pos.x = (gs->resolution[0] - text->w) / 2;
+    pos.y = gs->resolution[1] / 6 - text->h;
+    SDL_BlitSurface(text, 0, gs->screen, &pos);
+    SDL_FreeSurface(text);
+    // zweiten Menupunkt malen
+    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "800x600", \
+        ((gs->menu_state == MENU_STATE_SVGA) ? text_color_highlighted : text_color));
+    pos.x = (gs->resolution[0] - text->w) / 2;
+    pos.y = gs->resolution[1] / 3 - text->h;
+    SDL_BlitSurface(text, 0, gs->screen, &pos);
+    SDL_FreeSurface(text);
+    // dritten Menupunkt malen
+    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "1024x768", \
+        ((gs->menu_state == MENU_STATE_XGA) ? text_color_highlighted : text_color));
+    pos.x = (gs->resolution[0] - text->w) / 2;
+    pos.y = gs->resolution[1] / 2 - text->h;
+    SDL_BlitSurface(text, 0, gs->screen, &pos);
+    SDL_FreeSurface(text);
+    // vierten Menupunkt malen
+    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "1280x1024", \
+        ((gs->menu_state == MENU_STATE_SXGA) ? text_color_highlighted : text_color));
+    pos.x = (gs->resolution[0] - text->w) / 2;
+    pos.y = gs->resolution[1] * 2 / 3 - text->h;
+    SDL_BlitSurface(text, 0, gs->screen, &pos);
+    SDL_FreeSurface(text);
+    // fünften Menupunkt malen
+    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "Vollbild", \
+        ((gs->menu_state == MENU_STATE_FULL) ? text_color_highlighted : text_color));
+    pos.x = (gs->resolution[0] - text->w) / 2;
+    pos.y = gs->resolution[1] * 5 / 6 - text->h;
+    SDL_BlitSurface(text, 0, gs->screen, &pos);
+    SDL_FreeSurface(text);
+    // Buffer vertauschen
+    SDL_UpdateWindowSurface(gs->window);
 }
 
 void view_update_highscore(struct game_state *gs)
@@ -83,7 +146,6 @@ void view_update_playing(struct game_state *gs)
     char str[11]; // 10 Stellen für Ziffern, 1 Nullbyte
     SDL_Rect pos;
     SDL_Surface *text;
-    SDL_Color text_color = { 255, 255, 255, 255 };
     memset(&pos, 0, sizeof(pos));
     // Hintergrund malen TODO: Bild
     SDL_FillRect(gs->screen, 0, SDL_MapRGB(gs->screen->format, 0, 0, 0));

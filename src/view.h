@@ -7,6 +7,8 @@ struct game_state;
 
 int view_init(struct game_state *gs);
 
+int view_reinit(struct game_state *gs);
+
 void view_update_mainmenu(struct game_state *gs);
 
 void view_update_optionmenu(struct game_state *gs);

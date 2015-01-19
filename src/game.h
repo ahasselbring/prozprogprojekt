@@ -46,8 +46,8 @@ struct game_state {
     unsigned char quit; // lesen: Model, schreiben: Controller
     unsigned char controls; // lesen: Model, schreiben: Controller
     enum menu_state menu_state; // lesen: View und Model, schreiben: Model
-    unsigned int resolution[2]; // lesen: View und Config, schreiben: Config und Menu
-    unsigned char fullscreen; // lesen: View und Config, schreiben: Config und Menu
+    unsigned int resolution[2]; // lesen: View und Config, schreiben: Config und Model
+    unsigned char fullscreen; // lesen: View und Config, schreiben: Config und Model
 };
 
 #endif

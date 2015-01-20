@@ -15,7 +15,7 @@ static const char *image_paths[IMAGE_NUMBER] = {
 
 int image_load(struct game_state *gs)
 {
-    unsigned int i;
+    unsigned int i,colorkey;
     for (i = 0; i < IMAGE_NUMBER; i++) {
         gs->images[i] = SDL_LoadBMP(image_paths[i]);
         if (gs->images[i] == NULL) {
@@ -25,6 +25,8 @@ int image_load(struct game_state *gs)
             }
             return -1;
         }
+        colorkey = SDL_MapRGB( gs->images[i]->format, 0,0,0);
+        SDL_SetColorKey( gs->images[i], SDL_TRUE, colorkey);
     }
     printf("Loaded images.\n");
     return 0;

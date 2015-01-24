@@ -23,13 +23,14 @@
 #define CONTROL_S 0x20
 #define CONTROL_ENTER 0x40
 
+#define PADDLE_HEIGHT 0.2
 #define PADDLE_DISTANCE 0.02
 
 #define CYCLE_DELAY 2
 
 #define BRICK_TIME 5
 #define BRICK_RADIUS 0.05
-#define BRICK_BORDER 10
+#define BRICK_BORDER 5
 
 enum model_state;
 enum menu_state;
@@ -55,7 +56,7 @@ struct game_state {
     unsigned char brick_player; // nur vom Model genutzt
     unsigned char brick_active; // nur vom Model genutzt
     double ball_position[2]; // lesen: Model und View, schreiben: Model
-    double ball_speed[2]; // nur vom Model genutzt
+    double ball_speed[2]; // nur vom Model genutzt - 0 <=> Betrag, 1 <=> Winkel
     enum model_state state; // nur vom Model genutzt
     struct timeval last_time; // nur vom Model genutzt
     struct timeval last_brick; // nur vom Model genutzt

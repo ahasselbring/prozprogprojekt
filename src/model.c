@@ -1,5 +1,6 @@
 #include <sys/time.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "game.h"
 
@@ -159,14 +160,14 @@ static void model_start(struct game_state *gs)
         gs->brick_list = next;
     }
     gs->position[0] = gs->position[1] = 0.5;
-    gs->speed[0] = gs->speed[1] = 0.9;
+    gs->speed[0] = gs->speed[1] = 1.2;
     gs->score[0] = gs->score[1] = 0;
     // TODO: Namen einlesen
     gs->name[0] = "foo";
     gs->name[1] = "bar";
     gs->ball_position[0] = gs->ball_position[1] = 0.5;
-    gs->ball_speed[0] = 0.7;
-    gs->ball_speed[1] = 0.9;
+    gs->ball_speed[0] = 1;
+    gs->ball_speed[1] = ((rand() & 1) ? M_PI : 0) + M_PI * (double)(rand() % 1024) / (1023 * 4);
     gs->brick_list = 0;
     gs->brick_player = 0;
     gs->brick_active = 0;
@@ -197,7 +198,7 @@ static void model_playing(struct game_state *gs)
             // Wenn kein Speicher mehr da ist, gibt es auch keinen weiteren Brick
             return;
         }
-        b->position[0] = 4 * PADDLE_DISTANCE + (1 - 4 * PADDLE_DISTANCE) * (double)(rand() % 1024) / 1023;
+        b->position[0] = 4 * PADDLE_DISTANCE + (1 - 8 * PADDLE_DISTANCE) * (double)(rand() % 1024) / 1023;
         b->position[1] = (double)(rand() % 1024) / 1023;
         b->health = (rand() % 4) + 1;
         b->score = b->health * 10;
@@ -217,8 +218,7 @@ static void model_playing(struct game_state *gs)
                 && ((gs->ball_position[1] + BRICK_RADIUS) > b->position[1]) \
                 && ((gs->ball_position[1] - BRICK_RADIUS) < b->position[1]))
             {
-                gs->ball_speed[0] = -gs->ball_speed[0];
-                gs->ball_speed[1] = -gs->ball_speed[1];
+                gs->ball_speed[1] = 2 * M_PI - gs->ball_speed[1];
                 if (!(--(b->health))) {
                     gs->score[gs->brick_player] += b->score;
                     if (prev) {
@@ -239,44 +239,52 @@ static void model_playing(struct game_state *gs)
     gettimeofday(&(gs->last_time), 0);
     dt = (double)(gs->last_time.tv_sec - last_time.tv_sec) \
         + (double)(gs->last_time.tv_usec - last_time.tv_usec) / 1000000;
+    // Wenn zu viele Bricks auf dem Feld sind, ist das Spiel zu Ende.
     if (gs->brick_active > BRICK_BORDER) {
         gs->state = MODEL_STATE_END;
     }
-    gs->ball_position[0] += gs->ball_speed[0] * dt;
+    // Ball in X-Richtung bewegen
+    gs->ball_position[0] += gs->ball_speed[0] * cos(gs->ball_speed[1]) * dt;
     if ((gs->ball_position[0] <= PADDLE_DISTANCE) \
-        && ((gs->position[0] - 0.2) < gs->ball_position[1]) \
-        && ((gs->position[0] + 0.2) > gs->ball_position[1]))
+        && ((gs->position[0] - PADDLE_HEIGHT) < gs->ball_position[1]) \
+        && ((gs->position[0] + PADDLE_HEIGHT) > gs->ball_position[1]))
     {
-        gs->ball_speed[0] = -gs->ball_speed[0];
-        gs->ball_position[0] += gs->ball_speed[0] * dt;
+        gs->ball_speed[1] = -0.9 * M_PI * (gs->position[0] - gs->ball_position[1]) / (2 * PADDLE_HEIGHT);
+        gs->ball_position[0] = PADDLE_DISTANCE;
         gs->brick_player = 0;
     } else if ((gs->ball_position[0] >= (1 - PADDLE_DISTANCE)) \
-        && ((gs->position[1] - 0.2) < gs->ball_position[1]) \
-        && ((gs->position[1] + 0.2) > gs->ball_position[1]))
+        && ((gs->position[1] - PADDLE_HEIGHT) < gs->ball_position[1]) \
+        && ((gs->position[1] + PADDLE_HEIGHT) > gs->ball_position[1]))
     {
-        gs->ball_speed[0] = -gs->ball_speed[0];
-        gs->ball_position[0] += gs->ball_speed[0] * dt;
+        gs->ball_speed[1] = M_PI * (1 + 0.9 * (gs->position[1] - gs->ball_position[1]) / (2 * PADDLE_HEIGHT));
+        gs->ball_position[0] = 1 - PADDLE_DISTANCE;
         gs->brick_player = 1;
     }
+    // Ball ist nach links oder rechts nicht aufgehalten worden - Punkte für den Gegner
     if ((gs->ball_position[0] >= 1) || (gs->ball_position[0] <= 0)) {
         if (gs->ball_position[0] >= 1) {
             gs->score[0] += 50;
         } else {
             gs->score[1] += 50;
         }
+        // Ball in die Mitte setzen
         gs->ball_position[0] = 0.5;
         gs->ball_position[1] = 0.5;
-        gs->ball_speed[0] = 0.7 * (.5 + (double)(rand() % 1024) / 1023);
-        if (rand() & 1) {
-            gs->ball_speed[0] = -gs->ball_speed[0];
-        }
-        gs->ball_speed[1] = 0.9;
+        gs->ball_speed[0] = 1;
+        gs->ball_speed[1] = ((rand() & 1) ? M_PI : 0) + M_PI * (double)(rand() % 1024) / (1023 * 4);
     }
-    gs->ball_position[1] += gs->ball_speed[1] * dt;
-    if ((gs->ball_position[1] >= 1) || (gs->ball_position[1] <= 0)) {
-        gs->ball_speed[1] = -gs->ball_speed[1];
-        gs->ball_position[1] += gs->ball_speed[1] * dt;
+    // Ball in Y-Richtung bewegen - dort kann er nur auf die Wand treffen
+    gs->ball_position[1] += gs->ball_speed[0] * sin(gs->ball_speed[1]) * dt;
+    if (gs->ball_position[1] > 1) {
+        gs->ball_position[1] = 1;
+        // Einfallswinkel = Ausfallswinkel
+        gs->ball_speed[1] = 2 * M_PI - gs->ball_speed[1];
+    } else if (gs->ball_position[1] < 0) {
+        gs->ball_position[1] = 0;
+        gs->ball_speed[1] = 2 * M_PI - gs->ball_speed[1];
     }
+    // Benutzereingaben verwalten
+    // linker Spieler
     if (gs->controls & CONTROL_W) {
         gs->position[0] -= gs->speed[0] * dt;
         if (gs->position[0] < 0) {
@@ -288,6 +296,7 @@ static void model_playing(struct game_state *gs)
             gs->position[0] = 1;
         }
     }
+    // rechter Spieler
     if (gs->controls & CONTROL_UP) {
         gs->position[1] -= gs->speed[1] * dt;
         if (gs->position[1] < 0) {
@@ -299,6 +308,7 @@ static void model_playing(struct game_state *gs)
             gs->position[1] = 1;
         }
     }
+    // Bricks behandeln
     brick_collision(gs);
     brick_add(gs);
 }

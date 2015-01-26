@@ -15,12 +15,6 @@ void controller_cycle(struct game_state *gs)
                 case SDLK_DOWN:
                     gs->controls |= CONTROL_DOWN;
                     break;
-                case SDLK_LEFT:
-                    gs->controls |= CONTROL_LEFT;
-                    break;
-                case SDLK_RIGHT:
-                    gs->controls |= CONTROL_RIGHT;
-                    break;
                 case SDLK_w:
                     gs->controls |= CONTROL_W;
                     break;
@@ -30,6 +24,9 @@ void controller_cycle(struct game_state *gs)
                 case SDLK_RETURN:
                     gs->controls |= CONTROL_ENTER;
                     break;
+                case SDLK_ESCAPE:
+                    gs->controls |= CONTROL_ESCAPE;
+                    break;
             }
         } else if (ev.type == SDL_KEYUP) {
             switch (ev.key.keysym.sym) {
@@ -38,12 +35,6 @@ void controller_cycle(struct game_state *gs)
                     break;
                 case SDLK_DOWN:
                     gs->controls &= ~CONTROL_DOWN;
-                    break;
-                case SDLK_LEFT:
-                    gs->controls &= ~CONTROL_LEFT;
-                    break;
-                case SDLK_RIGHT:
-                    gs->controls &= ~CONTROL_RIGHT;
                     break;
                 case SDLK_w:
                     gs->controls &= ~CONTROL_W;
@@ -55,7 +46,7 @@ void controller_cycle(struct game_state *gs)
                     gs->controls &= ~CONTROL_ENTER;
                     break;
                 case SDLK_ESCAPE:
-                    gs->quit = 1;
+                    gs->controls &= ~CONTROL_ESCAPE;
                     break;
             }
         }

@@ -17,11 +17,10 @@
 
 #define CONTROL_UP 0x01
 #define CONTROL_DOWN 0x02
-#define CONTROL_LEFT 0x04
-#define CONTROL_RIGHT 0x08
-#define CONTROL_W 0x10
-#define CONTROL_S 0x20
-#define CONTROL_ENTER 0x40
+#define CONTROL_W 0x04
+#define CONTROL_S 0x08
+#define CONTROL_ENTER 0x10
+#define CONTROL_ESCAPE 0x20
 
 #define PADDLE_HEIGHT 0.2
 #define PADDLE_DISTANCE 0.02

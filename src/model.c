@@ -15,37 +15,28 @@ static void model_intro(struct game_state *gs)
     gs->ball_position[0] = gs->ball_position[1] = 0.5;
     gs->ball_speed[0] = 0.5;
     gs->ball_speed[1] = 0;
-    gs->state = MODEL_STATE_PLAYING;
+    gs->menu_state = MENU_STATE_PLAY;
     gettimeofday(&(gs->last_time), 0);
     gs->state = MODEL_STATE_MAINMENU;
 }
 
 static void model_mainmenu(struct game_state *gs)
 {
-    // Das Delay ist dazu da, dass bei gedrückter Taste nicht jeden Cycle die Aktion wiederholt wird.
     double dt;
     struct timeval last_time = gs->last_time;
-    static unsigned int delay = 0;
-    if (delay) {
-        delay--;
-    }
     if (gs->controls & CONTROL_UP) {
-        if (!delay) {
-            // voriger Menupunkt
-            if (gs->menu_state) {
-                gs->menu_state--;
-            } else {
-                gs->menu_state = 2;
-            }
-            delay = MENU_DELAY;
+        gs->controls &= ~CONTROL_UP;
+        // voriger Menupunkt
+        if (gs->menu_state) {
+            gs->menu_state--;
+        } else {
+            gs->menu_state = 2;
         }
     } else if (gs->controls & CONTROL_DOWN) {
-        if (!delay) {
-            // nächster Menupunkt
-            gs->menu_state++;
-            gs->menu_state %= 3;
-            delay = MENU_DELAY;
-        }
+        gs->controls &= ~CONTROL_DOWN;
+        // nächster Menupunkt
+        gs->menu_state++;
+        gs->menu_state %= 3;
     } else if (gs->controls & CONTROL_ENTER) {
         // aktuellen Menupunkt auswählen
         // Enter löschen, da gedrückt gehaltenes Enter keine Auswirkungen haben soll.
@@ -59,11 +50,14 @@ static void model_mainmenu(struct game_state *gs)
                 break;
             case MENU_STATE_OPTIONS:
                 gs->state = MODEL_STATE_OPTIONMENU;
+                gs->menu_state = MENU_STATE_FULL;
                 break;
             default:
                 break;
         }
-        gs->menu_state = 0;
+    } else if (gs->controls & CONTROL_ESCAPE) {
+        gs->quit = 1;
+        return;
     }
     gettimeofday(&(gs->last_time), 0);
     dt = (double)(gs->last_time.tv_sec - last_time.tv_sec) \
@@ -86,28 +80,19 @@ static void model_mainmenu(struct game_state *gs)
 
 static void model_optionmenu(struct game_state *gs)
 {
-    // Das Delay ist dazu da, dass bei gedrückter Taste nicht jeden Cycle die Aktion wiederholt wird.
-    static unsigned int delay = 0;
-    if (delay) {
-        delay--;
-    }
     if (gs->controls & CONTROL_UP) {
-        if (!delay) {
-            // voriger Menupunkt
-            if (gs->menu_state) {
-                gs->menu_state--;
-            } else {
-                gs->menu_state = 4;
-            }
-            delay = MENU_DELAY;
+        gs->controls &= ~CONTROL_UP;
+        // voriger Menupunkt
+        if (gs->menu_state) {
+            gs->menu_state--;
+        } else {
+            gs->menu_state = 4;
         }
     } else if (gs->controls & CONTROL_DOWN) {
-        if (!delay) {
-            // nächster Menupunkt
-            gs->menu_state++;
-            gs->menu_state %= 5;
-            delay = MENU_DELAY;
-        }
+        gs->controls &= ~CONTROL_DOWN;
+        // nächster Menupunkt
+        gs->menu_state++;
+        gs->menu_state %= 5;
     } else if (gs->controls & CONTROL_ENTER) {
         // aktuellen Menupunkt auswählen
         // Enter löschen, da gedrückt gehaltenes Enter keine Auswirkungen haben soll.
@@ -141,14 +126,19 @@ static void model_optionmenu(struct game_state *gs)
                 break;
         }
         view_reinit(gs);
-        gs->state = MODEL_STATE_MAINMENU;
-        gs->menu_state = MENU_STATE_PLAY;
+        gs->state = MODEL_STATE_INTRO;
+    } else if (gs->controls & CONTROL_ESCAPE) {
+        gs->controls &= ~CONTROL_ESCAPE;
+        gs->state = MODEL_STATE_INTRO;
     }
 }
 
 static void model_highscore(struct game_state *gs)
 {
-    (void)gs;
+    if (gs->controls & CONTROL_ESCAPE) {
+        gs->controls &= ~CONTROL_ESCAPE;
+        gs->state = MODEL_STATE_INTRO;
+    }
 }
 
 static void model_start(struct game_state *gs)
@@ -307,6 +297,10 @@ static void model_playing(struct game_state *gs)
         if (gs->position[1] > 1) {
             gs->position[1] = 1;
         }
+    }
+    if (gs->controls & CONTROL_ESCAPE) {
+        gs->controls &= ~CONTROL_ESCAPE;
+        gs->state = MODEL_STATE_INTRO;
     }
     // Bricks behandeln
     brick_collision(gs);

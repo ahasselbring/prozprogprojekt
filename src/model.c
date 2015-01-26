@@ -1,6 +1,7 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #include "game.h"
 
@@ -10,8 +11,8 @@ static void model_intro(struct game_state *gs)
     gs->position[0] = gs->position[1] = 0.5;
     gs->speed[0] = gs->speed[1] = 0;
     gs->score[0] = gs->score[1] = 0;
-    gs->name[0] = "42";
-    gs->name[1] = "e^(i*pi)+1";
+    strncpy(gs->name[0], "42", HIGHSCORE_NAMELENGTH);
+    strncpy(gs->name[1], "e^(i*pi)+1", HIGHSCORE_NAMELENGTH);
     gs->ball_position[0] = gs->ball_position[1] = 0.5;
     gs->ball_speed[0] = 0.5;
     gs->ball_speed[1] = 0;
@@ -153,8 +154,8 @@ static void model_start(struct game_state *gs)
     gs->speed[0] = gs->speed[1] = 1.2;
     gs->score[0] = gs->score[1] = 0;
     // TODO: Namen einlesen
-    gs->name[0] = "foo";
-    gs->name[1] = "bar";
+    strncpy(gs->name[0], "foo", HIGHSCORE_NAMELENGTH);
+    strncpy(gs->name[1], "bar", HIGHSCORE_NAMELENGTH);
     gs->ball_position[0] = gs->ball_position[1] = 0.5;
     gs->ball_speed[0] = 1;
     gs->ball_speed[1] = ((rand() & 1) ? M_PI : 0) + M_PI * (double)(rand() % 1024) / (1023 * 4);
@@ -230,8 +231,11 @@ static void model_playing(struct game_state *gs)
     dt = (double)(gs->last_time.tv_sec - last_time.tv_sec) \
         + (double)(gs->last_time.tv_usec - last_time.tv_usec) / 1000000;
     // Wenn zu viele Bricks auf dem Feld sind, ist das Spiel zu Ende.
-    if (gs->brick_active > BRICK_BORDER) {
+    if ((gs->brick_active > BRICK_BORDER) || (gs->controls & CONTROL_ESCAPE)) {
+        gs->controls &= ~CONTROL_ESCAPE;
         gs->state = MODEL_STATE_END;
+        highscore_add(gs, gs->name[0], gs->score[0]);
+        highscore_add(gs, gs->name[1], gs->score[1]);
     }
     // Ball in X-Richtung bewegen
     gs->ball_position[0] += gs->ball_speed[0] * cos(gs->ball_speed[1]) * dt;
@@ -297,10 +301,6 @@ static void model_playing(struct game_state *gs)
         if (gs->position[1] > 1) {
             gs->position[1] = 1;
         }
-    }
-    if (gs->controls & CONTROL_ESCAPE) {
-        gs->controls &= ~CONTROL_ESCAPE;
-        gs->state = MODEL_STATE_INTRO;
     }
     // Bricks behandeln
     brick_collision(gs);

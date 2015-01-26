@@ -2,10 +2,10 @@ Das Spiel soll das Prinzip von Pong/Breakout übernehmen.
 
 0. Name: PongING (fertig)
 1. zwei Spieler - keine KI (fertig)
-2. Highscore mit Namen
+2. Highscore mit Namen (fertig)
 3. Spielstandsanzeige (fertig)
 4. Bildschirmparameter aus Datei auslesen (fertig), im Spiel veränderbar (fertig)
-5. Einfallswinkel und -punkt bestimmt Flugbahn
+5. Einfallswinkel und -punkt bestimmt Flugbahn (fertig)
 6. Punkte durch Steine im Feld, die zufällig entstehen (fertig)
 7. variable Steinhärte (fertig)
 8. beweglicher Startbildschirm (fertig)

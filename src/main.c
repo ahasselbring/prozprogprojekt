@@ -8,6 +8,7 @@ int main(void)
 {
     memset(&the_game, 0, sizeof(the_game));
     config_read(&the_game);
+    highscore_read(&the_game);
     if (model_init(&the_game) < 0) {
         return -1;
     }
@@ -20,6 +21,7 @@ int main(void)
     }
     view_destroy(&the_game);
     model_destroy(&the_game);
+    highscore_write(&the_game);
     config_write(&the_game);
     return 0;
 }

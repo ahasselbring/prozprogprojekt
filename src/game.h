@@ -11,6 +11,7 @@
 #include "view.h"
 #include "controller.h"
 #include "config.h"
+#include "highscore.h"
 
 #define PLAYER_LEFT 0
 #define PLAYER_RIGHT 1
@@ -33,6 +34,7 @@
 
 enum model_state;
 enum menu_state;
+struct highscore_entry;
 
 struct brick {
     double position[2];
@@ -47,7 +49,7 @@ struct game_state {
     SDL_Surface *screen; // nur vom View genutzt
     SDL_Surface *images[IMAGE_NUMBER]; // nur vom View genutzt
     TTF_Font *fonts[FONT_NUMBER]; // nur vom View genutzt
-    const char *name[2]; // lesen: Model und View, schreiben: Model
+    char name[2][HIGHSCORE_NAMELENGTH]; // lesen: Model und View, schreiben: Model
     unsigned int score[2]; // lesen: Model und View, schreiben: Model
     double position[2]; // lesen: Model und View, schreiben: Model
     double speed[2]; // nur vom Model genutzt
@@ -64,6 +66,7 @@ struct game_state {
     enum menu_state menu_state; // lesen: View und Model, schreiben: Model
     unsigned int resolution[2]; // lesen: View und Config, schreiben: Config und Model
     unsigned char fullscreen; // lesen: View und Config, schreiben: Config und Model
+    struct highscore_entry highscore[HIGHSCORE_ENTRIES];
 };
 
 #endif

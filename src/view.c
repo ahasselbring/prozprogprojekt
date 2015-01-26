@@ -81,6 +81,9 @@ void view_update_mainmenu(struct game_state *gs)
     for (i = 0; i < 3; i++) {
         text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], main_menu[i].label, \
             ((gs->menu_state == main_menu[i].state) ? text_color_highlighted : text_color));
+        if (!text) {
+            continue;
+        }
         pos.x = (gs->resolution[0] - text->w) / 2;
         pos.y = gs->resolution[1] * (i + 1) / 4 - text->h;
         SDL_BlitSurface(text, 0, gs->screen, &pos);
@@ -101,6 +104,9 @@ void view_update_optionmenu(struct game_state *gs)
     for (i = 0; i < 5; i++) {
         text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], option_menu[i].label, \
             ((gs->menu_state == option_menu[i].state) ? text_color_highlighted : text_color));
+        if (!text) {
+            continue;
+        }
         pos.x = (gs->resolution[0] - text->w) / 2;
         pos.y = gs->resolution[1] * (i + 1) / 6 - text->h;
         SDL_BlitSurface(text, 0, gs->screen, &pos);
@@ -112,7 +118,35 @@ void view_update_optionmenu(struct game_state *gs)
 
 void view_update_highscore(struct game_state *gs)
 {
-    (void)gs;
+    unsigned int i;
+    char str[11]; // 10 Stellen für Ziffern, 1 Nullbyte
+    SDL_Rect pos;
+    SDL_Surface *text;
+    memset(&pos, 0, sizeof(pos));
+    // Hintergrund malen TODO: Bild
+    SDL_FillRect(gs->screen, 0, SDL_MapRGB(gs->screen->format, 0, 0, 0));
+    for (i = 0; i < HIGHSCORE_ENTRIES; i++) {
+        text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], gs->highscore[i].name, text_color);
+        if (!text) {
+            continue;
+        }
+        pos.x = gs->resolution[0] / 2 - text->w - 10;
+        pos.y = gs->resolution[1] * (i + 1) / (HIGHSCORE_ENTRIES + 1) - text->h;
+        SDL_BlitSurface(text, 0, gs->screen, &pos);
+        SDL_FreeSurface(text);
+        sprintf(str, "%u", gs->highscore[i].score);
+        text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], str, text_color);
+        if (!text) {
+            continue;
+        }
+        pos.x = gs->resolution[0] / 2 + 10;
+        // evtl. könnte man sich diese Berechnung sparen, aber ich weiß nicht, ob SDL_BlitSurface Nebenwirkungen hat.
+        pos.y = gs->resolution[1] * (i + 1) / (HIGHSCORE_ENTRIES + 1) - text->h;
+        SDL_BlitSurface(text, 0, gs->screen, &pos);
+        SDL_FreeSurface(text);
+    }
+    // Buffer vertauschen
+    SDL_UpdateWindowSurface(gs->window);
 }
 
 void view_update_playing(struct game_state *gs)

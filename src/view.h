@@ -5,6 +5,11 @@
 
 struct game_state;
 
+struct menu {
+    const char *label;
+    enum menu_state state;
+};
+
 int view_init(struct game_state *gs);
 
 int view_reinit(struct game_state *gs);

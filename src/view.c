@@ -4,6 +4,18 @@
 
 static SDL_Color text_color = { 255, 255, 255, 255 };
 static SDL_Color text_color_highlighted = { 255, 0, 30, 255 };
+static struct menu main_menu[] = {
+    { "Spielen", MENU_STATE_PLAY },
+    { "Highscore", MENU_STATE_HIGHSCORE },
+    { "Optionen", MENU_STATE_OPTIONS }
+};
+static struct menu option_menu[] = {
+    { "640x480", MENU_STATE_VGA },
+    { "800x600", MENU_STATE_SVGA },
+    { "1024x768", MENU_STATE_XGA },
+    { "1280x1024", MENU_STATE_SXGA },
+    { "Vollbild", MENU_STATE_FULL }
+};
 
 int view_init(struct game_state *gs)
 {
@@ -60,78 +72,40 @@ int view_reinit(struct game_state *gs)
 
 void view_update_mainmenu(struct game_state *gs)
 {
+    unsigned int i;
     SDL_Rect pos;
     SDL_Surface *text;
     memset(&pos, 0, sizeof(pos));
     // Hintergrundszene malen
     view_update_playing(gs);
-    // ersten Menupunkt malen
-    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "Spielen", \
-        ((gs->menu_state == MENU_STATE_PLAY) ? text_color_highlighted : text_color));
-    pos.x = (gs->resolution[0] - text->w) / 2;
-    pos.y = gs->resolution[1] / 4 - text->h;
-    SDL_BlitSurface(text, 0, gs->screen, &pos);
-    SDL_FreeSurface(text);
-    // zweiten Menupunkt malen
-    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "Highscore", \
-        ((gs->menu_state == MENU_STATE_HIGHSCORE) ? text_color_highlighted : text_color));
-    pos.x = (gs->resolution[0] - text->w) / 2;
-    pos.y = gs->resolution[1] / 2 - text->h;
-    SDL_BlitSurface(text, 0, gs->screen, &pos);
-    SDL_FreeSurface(text);
-    // dritten Menupunkt malen
-    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "Optionen", \
-        ((gs->menu_state == MENU_STATE_OPTIONS) ? text_color_highlighted : text_color));
-    pos.x = (gs->resolution[0] - text->w) / 2;
-    pos.y = gs->resolution[1] * 3 / 4 - text->h;
-    SDL_BlitSurface(text, 0, gs->screen, &pos);
-    SDL_FreeSurface(text);
+    for (i = 0; i < 3; i++) {
+        text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], main_menu[i].label, \
+            ((gs->menu_state == main_menu[i].state) ? text_color_highlighted : text_color));
+        pos.x = (gs->resolution[0] - text->w) / 2;
+        pos.y = gs->resolution[1] * (i + 1) / 4 - text->h;
+        SDL_BlitSurface(text, 0, gs->screen, &pos);
+        SDL_FreeSurface(text);
+    }
     // Buffer vertauschen
     SDL_UpdateWindowSurface(gs->window);
 }
 
 void view_update_optionmenu(struct game_state *gs)
 {
+    unsigned int i;
     SDL_Rect pos;
     SDL_Surface *text;
     memset(&pos, 0, sizeof(pos));
     // Hintergrund malen TODO: Bild
     SDL_FillRect(gs->screen, 0, SDL_MapRGB(gs->screen->format, 0, 0, 0));
-    // ersten Menupunkt malen
-    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "640x480", \
-        ((gs->menu_state == MENU_STATE_VGA) ? text_color_highlighted : text_color));
-    pos.x = (gs->resolution[0] - text->w) / 2;
-    pos.y = gs->resolution[1] / 6 - text->h;
-    SDL_BlitSurface(text, 0, gs->screen, &pos);
-    SDL_FreeSurface(text);
-    // zweiten Menupunkt malen
-    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "800x600", \
-        ((gs->menu_state == MENU_STATE_SVGA) ? text_color_highlighted : text_color));
-    pos.x = (gs->resolution[0] - text->w) / 2;
-    pos.y = gs->resolution[1] / 3 - text->h;
-    SDL_BlitSurface(text, 0, gs->screen, &pos);
-    SDL_FreeSurface(text);
-    // dritten Menupunkt malen
-    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "1024x768", \
-        ((gs->menu_state == MENU_STATE_XGA) ? text_color_highlighted : text_color));
-    pos.x = (gs->resolution[0] - text->w) / 2;
-    pos.y = gs->resolution[1] / 2 - text->h;
-    SDL_BlitSurface(text, 0, gs->screen, &pos);
-    SDL_FreeSurface(text);
-    // vierten Menupunkt malen
-    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "1280x1024", \
-        ((gs->menu_state == MENU_STATE_SXGA) ? text_color_highlighted : text_color));
-    pos.x = (gs->resolution[0] - text->w) / 2;
-    pos.y = gs->resolution[1] * 2 / 3 - text->h;
-    SDL_BlitSurface(text, 0, gs->screen, &pos);
-    SDL_FreeSurface(text);
-    // fünften Menupunkt malen
-    text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], "Vollbild", \
-        ((gs->menu_state == MENU_STATE_FULL) ? text_color_highlighted : text_color));
-    pos.x = (gs->resolution[0] - text->w) / 2;
-    pos.y = gs->resolution[1] * 5 / 6 - text->h;
-    SDL_BlitSurface(text, 0, gs->screen, &pos);
-    SDL_FreeSurface(text);
+    for (i = 0; i < 5; i++) {
+        text = TTF_RenderText_Solid(gs->fonts[FONT_MENU], option_menu[i].label, \
+            ((gs->menu_state == option_menu[i].state) ? text_color_highlighted : text_color));
+        pos.x = (gs->resolution[0] - text->w) / 2;
+        pos.y = gs->resolution[1] * (i + 1) / 6 - text->h;
+        SDL_BlitSurface(text, 0, gs->screen, &pos);
+        SDL_FreeSurface(text);
+    }
     // Buffer vertauschen
     SDL_UpdateWindowSurface(gs->window);
 }

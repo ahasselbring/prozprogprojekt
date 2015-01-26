@@ -7,8 +7,8 @@
 
 #include "image.h"
 #include "font.h"
-#include "view.h"
 #include "model.h"
+#include "view.h"
 #include "controller.h"
 #include "config.h"
 
